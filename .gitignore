@@ -1,0 +1,25 @@
+# Node.js dependencies
+/frontend/node_modules/
+/backend/node_modules/
+
+# Python virtual environment
+/backend/env/
+
+# Project dependencies
+/.pnp
+.pnp.js
+
+# Testing directories
+/frontend/coverage/
+/backend/coverage/
+
+# Production build folder
+/frontend/build/
+
+# Miscellaneous
+.DS_Store
+*.log*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

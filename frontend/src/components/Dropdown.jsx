@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Select, MenuItem } from '@mui/material';
-import { useTheme } from '@mui/material/styles'; // Import useTheme hook to access the theme
+import { useTheme } from '@mui/material/styles'; 
 
 const Dropdown = ({ selectedTable, handleTableChange }) => {
-  const theme = useTheme(); // Access the theme
+  const theme = useTheme(); // access theme
 
   return (
     <Box sx={{ marginBottom: 6}}>
@@ -13,13 +13,13 @@ const Dropdown = ({ selectedTable, handleTableChange }) => {
         displayEmpty 
         inputProps={{ 'aria-label': 'Without label' }}
         sx={{ 
-          backgroundColor: theme.palette.green.main, // Set background color to green
-          color: '#ffffff', // Set text color to white
+          backgroundColor: theme.palette.green.main,
+          color: '#ffffff',
           '&:hover': {
-            backgroundColor: theme.palette.green.dark, // Darker background color on hover
+            backgroundColor: theme.palette.green.dark, // darker background color on hover
           },
           '& .MuiSelect-icon': {
-            color: '#ffffff', // Set arrow icon color to white
+            color: '#ffffff', // set arrow icon color to white
           },
         }} 
       >

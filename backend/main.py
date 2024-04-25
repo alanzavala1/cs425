@@ -1,12 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, status, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi import Path, HTTPException, Depends, status
+from pydantic import BaseModel, Field
 from typing import Annotated
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from datetime import datetime
-from typing import List
+import logging
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -131,11 +132,140 @@ async def read_categories(db: db_dependency):
 async def read_reviews(db: db_dependency):
      reviews = db.query(models.Review).all()
      return reviews
+#U - Update
+@app.put("/user/{UserID}", status_code=status.HTTP_200_OK)
+async def update_user(UserID: str, user_update: UserBase, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.UserID == UserID).first()
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Update fields if they are provided in the request
+    update_fields = ['Username', 'Email', 'Password', 'RegistrationDate', 'LastLoginDate', 'DeliveryAddress']
+    for field in update_fields:
+        new_value = getattr(user_update, field, None)
+        if new_value is not None:
+            setattr(db_user, field, new_value)
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.put("/product/{ProductID}", status_code=status.HTTP_200_OK)
+async def update_product(ProductID: str, product_update: ProductBase, db: Session = Depends(get_db)):
+    db_product = db.query(models.Product).filter(models.Product.ProductID == ProductID).first()
+    if not db_product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    update_fields = ['Title', 'Description', 'Price', 'Conditionn', 'CategoryID', 'SellerID', 'ShippingAddress']
+    for field in update_fields:
+        new_value = getattr(product_update, field, None)
+        if new_value is not None:
+            setattr(db_product, field, new_value)
+
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+@app.put("/bid/{BidID}", status_code=status.HTTP_200_OK)
+async def update_bid(BidID: str, bid_update: BidBase, db: Session = Depends(get_db)):
+    db_bid = db.query(models.Bid).filter(models.Bid.BidID == BidID).first()
+    if not db_bid:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found")
+
+    update_fields = ['ProductID', 'UserID', 'BidAmount', 'BidTime']
+    for field in update_fields:
+        new_value = getattr(bid_update, field, None)
+        if new_value is not None:
+            setattr(db_bid, field, new_value)
+
+    db.commit()
+    db.refresh(db_bid)
+    return db_bid
+
+@app.put("/category/{CategoryID}", status_code=status.HTTP_200_OK)
+async def update_category(CategoryID: str, category_update: CategoryBase, db: Session = Depends(get_db)):
+    # Retrieve category from the database using the CategoryID
+    db_category = db.query(models.Category).filter(models.Category.CategoryID == CategoryID).first()
+    if not db_category:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+
+    # List of fields that are allowed to be updated
+    update_fields = ['CategoryName']
+
+    # Iterate over fields and update them if a new value has been provided
+    for field in update_fields:
+        new_value = getattr(category_update, field, None)  # Get the new value from the category_update object
+        if new_value is not None:  # Check if the new value is provided
+            setattr(db_category, field, new_value)  # Set the new value to the category object in the database
+
+    # Commit the changes to database
+    db.commit()
+
+    # Refresh the instance from the database to ensure it returns the updated data
+    db.refresh(db_category)
+
+    # Return the updated category object
+    return db_category
+
+
+@app.put("/review/{ProductID}/{UserID}", status_code=status.HTTP_200_OK)
+async def update_review(ProductID: str, UserID: str, review_update: ReviewBase, db: Session = Depends(get_db)):
+    db_review = db.query(models.Review).filter(models.Review.ProductID == ProductID, models.Review.UserID == UserID).first()
+    if not db_review:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+
+    update_fields = ['Rating', 'Comment', 'ReviewDate']
+    for field in update_fields:
+        new_value = getattr(review_update, field, None)
+        if new_value is not None:
+            setattr(db_review, field, new_value)
+
+    db.commit()
+    db.refresh(db_review)
+    return db_review
+# D - Delete
+@app.delete("/user/{UserID}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(UserID: str, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.UserID == UserID).first()
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    db.delete(db_user)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.delete("/product/{ProductID}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(ProductID: str, db: Session = Depends(get_db)):
+    db_product = db.query(models.Product).filter(models.Product.ProductID == ProductID).first()
+    if not db_product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    db.delete(db_product)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.delete("/category/{CategoryID}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_category(CategoryID: str, db: Session = Depends(get_db)):
+    db_category = db.query(models.Category).filter(models.Category.CategoryID == CategoryID).first()
+    if not db_category:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    db.delete(db_category)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.delete("/bid/{BidID}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_bid(BidID: str, db: Session = Depends(get_db)):
+    db_bid = db.query(models.Bid).filter(models.Bid.BidID == BidID).first()
+    if not db_bid:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bid not found")
+    db.delete(db_bid)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 
 app.add_middleware(
-  CORSMiddleware,
-  allow_origins=["http://localhost:3000"],
-  allow_credentials=True,
-  allow_methods=["GET", "POST", "PUT", "DELETE"],
-  allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins="http://localhost:3000",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )

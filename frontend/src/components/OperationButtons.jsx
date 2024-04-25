@@ -1,13 +1,15 @@
 import React from 'react';
-import { Box, Button } from '@mui/material';
+import { Button, Box } from '@mui/material';
 
-const OperationButtons = ({ handleCreate, handleRead, handleUpdate, handleDelete }) => (
-  <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, marginBottom: 7 }}>
-    <Button onClick={handleCreate} color="green" variant="contained" size="large">Create</Button>
-    <Button onClick={handleRead} color="green" variant="contained" size="large">Read</Button>
-    <Button onClick={handleUpdate} color="green" variant="contained" size="large">Update</Button>
-    <Button onClick={handleDelete} color="green" variant="contained" size="large">Delete</Button>
-  </Box>
-);
+const OperationButtons = ({ handleCreate, handleRead, handleUpdate, handleDelete }) => {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+      <Button onClick={handleCreate} color="primary" variant="contained">Create</Button>
+      <Button onClick={handleRead} color="primary" variant="contained">Read</Button>
+      <Button onClick={handleUpdate} color="primary" variant="contained">Update</Button>
+      <Button onClick={handleDelete} color="primary" variant="contained">Delete</Button> {/* Added this line */}
+    </Box>
+  );
+};
 
 export default OperationButtons;

@@ -1,179 +1,141 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import MetaData, Table, Column, Integer, String, Text, PrimaryKeyConstraint
-import databases
-from contextlib import asynccontextmanager
 from pydantic import BaseModel
+from typing import Annotated
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import List
 
-DATABASE_URL = "mysql+aiomysql://root:password@localhost/ebay"
-database = databases.Database(DATABASE_URL)
-metadata = MetaData()
+app = FastAPI()
+models.Base.metadata.create_all(bind=engine)
 
-# Define your tables
-users = Table(
-    "user", metadata,
-    Column("UserID", String, primary_key=True),
-    Column("Username", String),
-    Column("Email", String),
-    Column("Password", String),
-    Column("RegistrationDate", String),
-    Column("LastLoginDate", String),
-    Column("DeliveryAddress", String),
-)
-
-product = Table(
-    "product", metadata,
-    Column("ProductID", String, primary_key=True),
-    Column("Title", String),
-    Column("Description", String),
-    Column("Price", String),
-    Column("Conditionn", String),
-    Column("CategoryID", String),
-    Column("SellerID", String),
-    Column("ShippingAddress", String),
-)
-
-transaction = Table(
-    "transaction", metadata,
-    Column("BuyerID", String, primary_key=True),
-    Column("SellerID", String),
-    Column("ProductID", String),
-    Column("TransactionDate", String),
-    Column("Quantity", String),
-    Column("EstimatedDeliveryDate", String),
-    Column("Delivered", String),
-    Column("DeliveryAddress", String),
-    Column("ShippingAddress", String),
-)
-
-bid = Table(
-    "bid", metadata,
-    Column("BidID", String, primary_key=True),
-    Column("ProductID", String),
-    Column("UserID", String),
-    Column("BidAmount", String),
-    Column("BidTime", String),
-)
-
-category = Table(
-    "category", metadata,
-    Column("CategoryID", String, primary_key=True),
-    Column("CategoryName", String),
-)
-
-review = Table( 
-    "review", metadata,
-    Column("ProductID", String, primary_key=True),
-    Column("UserID", String),
-    Column("Rating", Integer),
-    Column("Comment", Text),
-    Column("ReviewDate", String),
-    PrimaryKeyConstraint("ProductID", "UserID"),
-)
-
-# Define Pydantic models
-class User(BaseModel):
+class UserBase (BaseModel):
     UserID: str
     Username: str
     Email: str
     Password: str
-    RegistrationDate: str
-    LastLoginDate: str
-    DeliveryAddress: str
+    RegistrationDate:str = None
+    LastLoginDate:str = None
+    DeliveryAddress:str = None
 
-class Product(BaseModel):
-    ProductID: str
+class ProductBase (BaseModel):
+    ProductID: str  
     Title: str
     Description: str
-    Price: str
-    Conditionn: str
-    CategoryID: str
-    SellerID: str
-    ShippingAddress: str
+    Price:str = None
+    Conditionn:str = None
+    CategoryID:str = None
+    SellerID:str = None
+    ShippingAddress:str = None
 
-class Bid(BaseModel):
-    BidID: str
-    ProductID: str
-    UserID: str
-    BidAmount: str
-    BidTime: str
-
-class Transaction(BaseModel):
+class TransactionBase (BaseModel):
     TransactionID: str
     BuyerID: str
     SellerID: str
-    ProductID: str 
-    TransactionDate: str 
-    Quantity: str
-    EstimatedDeliveryDate: str
-    Delivered: str
-    DeliveryAddress: str
-    ShippingAddress: str
+    ProductID:str = None
+    TransactionDate:str = None
+    Quantity:str = None
+    EstimatedDeliveryDate:str = None
+    Delivered:str = None
+    DeliveryAddress:str = None
+    ShippingAddress:str = None
 
-class Category(BaseModel):
+class BidBase (BaseModel):
+    BidID: str
+    ProductID: str
+    UserID: str
+    BidAmount:str = None
+    BidTime:str = None
+
+class CategoryBase (BaseModel):
     CategoryID: str
     CategoryName: str
 
-class ReviewModel(BaseModel):  # Renamed from Review
+class ReviewBase (BaseModel):
     ProductID: str
     UserID: str
-    Rating: int
-    Comment: str
-    ReviewDate: str 
+    Rating: str
+    Comment:str = None
+    ReviewDate:str = None
 
-    class Config:
-        orm_mode = True
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Define app lifespan context manager
-@asynccontextmanager
-async def app_lifespan(app):
-    await database.connect()
-    yield
-    await database.disconnect()
+db_dependency = Annotated[Session, Depends(get_db)]
+#C - Create
+@app.post("/user/", status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserBase, db: db_dependency):
+    db_user = models.User(**user.model_dump())
+    db.add(db_user)
+    db.commit()
+    return user
+@app.post("/product/", status_code=status.HTTP_201_CREATED)
+async def create_product(prod: ProductBase, db: db_dependency):
+    db_prods = models.Product(**prod.model_dump())
+    db.add(db_prods)
+    db.commit()
+    return prod
+@app.post("/transaction/", status_code=status.HTTP_201_CREATED)
+async def create_trans(trans: TransactionBase, db: db_dependency):
+    db_trans = models.Transaction(**trans.model_dump())
+    db.add(db_trans)
+    db.commit()
+    return trans
+@app.post("/bid/", status_code=status.HTTP_201_CREATED)
+async def create_bid(bid: BidBase, db: db_dependency):
+    db_bids = models.Bid(**bid.model_dump())
+    db.add(db_bids)
+    db.commit()
+    return bid
+@app.post("/category/", status_code=status.HTTP_201_CREATED)
+async def create_category(category: CategoryBase, db: db_dependency):
+    db_categories = models.Category(**category.model_dump())
+    db.add(db_categories)
+    db.commit()
+    return category
 
-# Create FastAPI app
-app = FastAPI(lifespan=app_lifespan)
+@app.post("/review/", status_code=status.HTTP_201_CREATED)
+async def create_review(review: ReviewBase, db: db_dependency):
+    db_reviews = models.Review(**review.model_dump())
+    db.add(db_reviews)
+    db.commit()
+    return review
+#R - Read
+@app.get("/user/", status_code=status.HTTP_200_OK)
+async def read_users(db: db_dependency):
+     users = db.query(models.User).all()
+     return users
+@app.get("/product/", status_code=status.HTTP_200_OK)
+async def read_products(db: db_dependency):
+     products = db.query(models.Product).all()
+     return products
+@app.get("/transaction/", status_code=status.HTTP_200_OK)
+async def read_transactions(db: db_dependency):
+     transactions = db.query(models.Transaction).all()
+     return transactions
+@app.get("/bid/", status_code=status.HTTP_200_OK)
+async def read_bids(db: db_dependency):
+     bids = db.query(models.Bid).all()
+     return bids
+@app.get("/category/", status_code=status.HTTP_200_OK)
+async def read_categories(db: db_dependency):
+     categories = db.query(models.Category).all()
+     return categories
+@app.get("/review/", status_code=status.HTTP_200_OK)
+async def read_reviews(db: db_dependency):
+     reviews = db.query(models.Review).all()
+     return reviews
 
-# Add CORS middleware
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
+  CORSMiddleware,
+  allow_origins=["http://localhost:3000"],
+  allow_credentials=True,
+  allow_methods=["GET", "POST", "PUT", "DELETE"],
+  allow_headers=["*"],
 )
-
-# Define routes
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-@app.get("/user/")
-async def read_users():
-    query = users.select()
-    return await database.fetch_all(query=query)
-
-@app.get("/product/")
-async def read_products():
-    query = product.select()
-    return await database.fetch_all(query=query)
-
-@app.get("/bid/")
-async def read_bids():
-    query = bid.select()
-    return await database.fetch_all(query=query)
-
-@app.get("/transaction/")
-async def read_transactions():
-    query = transaction.select()
-    return await database.fetch_all(query=query)
-
-@app.get("/category/")
-async def read_category():
-    query = category.select()
-    return await database.fetch_all(query=query)
-
-@app.get("/review/")
-async def read_reviews():
-    query = review.select()
-    return await database.fetch_all(query=query)

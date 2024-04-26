@@ -1,15 +1,17 @@
+// In src/components/OperationButtons.js
 import React from 'react';
-import { Button, Box } from '@mui/material';
+import { Button, Box} from '@mui/material';
 
-const OperationButtons = ({ handleCreate, handleRead, handleUpdate, handleDelete }) => {
+function OperationButtons({ handleCreate, handleRead, handleUpdate, handleDelete, handleAdvanced}) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-      <Button onClick={handleCreate} color="primary" variant="contained">Create</Button>
-      <Button onClick={handleRead} color="primary" variant="contained">Read</Button>
-      <Button onClick={handleUpdate} color="primary" variant="contained">Update</Button>
-      <Button onClick={handleDelete} color="primary" variant="contained">Delete</Button> {/* Added this line */}
+      <Button onClick={handleCreate} color="green" variant="contained">Create</Button>
+      <Button onClick={handleRead} color="green" variant="contained">Read</Button>
+      <Button onClick={handleUpdate} color="green" variant="contained">Update</Button>
+      <Button onClick={handleDelete} color="green" variant="contained">Delete</Button>
+      <Button onClick={handleAdvanced} color="red" variant="contained">Advanced</Button>
     </Box>
   );
-};
+}
 
 export default OperationButtons;

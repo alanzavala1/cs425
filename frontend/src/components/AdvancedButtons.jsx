@@ -1,10 +1,17 @@
 import React from 'react';
-import { Button, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
 
-const AdvancedButton = ({ onClick }) => (
-  <Button onClick={onClick} sx={{ backgroundColor: 'red.main', padding: 2, borderRadius: 4, marginTop: 10, width: 'fit-content' }}>
-    <Typography variant="h4" color="common.white">Advanced</Typography>
-  </Button>
-);
+function AdvancedButton({ onClick }) {
+  return (
+    <Button
+      variant="contained" 
+      color="primary" 
+      onClick={onClick}
+      sx={{ mt: 2 }} // Add some margin top for spacing
+    >
+      Go to Advanced Page
+    </Button>
+  );
+}
 
 export default AdvancedButton;

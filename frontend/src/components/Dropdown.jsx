@@ -13,7 +13,7 @@ const Dropdown = ({ selectedTable, handleTableChange }) => {
         displayEmpty 
         inputProps={{ 'aria-label': 'Without label' }}
         sx={{ 
-          backgroundColor: theme.palette.green.main,
+          backgroundColor: theme.palette.blue.main,
           color: '#ffffff',
           '&:hover': {
             backgroundColor: theme.palette.green.dark, // darker background color on hover

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ThemeProvider, CssBaseline, Box, CircularProgress, Button, Typography} from '@mui/material';
 import { theme } from '../theme/theme';
-import CrudOperationsBanner from './CrudOperationsBanner';
 import Dropdown from './Dropdown';
 import OperationButtons from './OperationButtons';
 import axios from 'axios';
@@ -190,7 +189,7 @@ function App() {
       try {
           const response = await axios.get('http://localhost:8000/compare_price');
           setTableData(response.data);
-          setColumns(['ProductID', 'Title', 'Price', 'NextPri']);
+          setColumns(['ProductID', 'Title', 'Price', 'PrevPrice', 'NextPrice']);
           setShowTablePage(true);
       } catch (error) {
           setError('Failed to fetch price comparison data.');
@@ -228,17 +227,25 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            minHeight: '100vh', // Use minHeight to ensure the container expands with content
-            padding: 8, 
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            padding: 8,
             backgroundColor: '#171717',
-            overflowY: 'auto' // Enable vertical scrolling
+            overflowY: 'auto'
         }}>
-            <CrudOperationsBanner />
+            <Box sx={{ fontSize: '50px', fontWeight: 'bold', marginBottom: 2 }}>
+                <span style={{ color: '#e53238' }}>e</span>
+                <span style={{ color: '#0064d2' }}>B</span>
+                <span style={{ color: '#f5af02' }}>a</span>
+                <span style={{ color: '#86b817' }}>y</span>
+            </Box>
+            <Typography variant="h4" component="h1" sx={{ color: 'white', mb: 4 }}>
+                Database Tool
+            </Typography>
             <Dropdown selectedTable={selectedTable} handleTableChange={handleTableChange} />
             <Box sx={{ mb: 3, color: 'green.main' }}>
                 <OperationButtons
@@ -255,7 +262,7 @@ function App() {
                         <Button
                             key={option.id}
                             onClick={option.action}
-                            color="primary"
+                            color="red"
                             variant="contained"
                             sx={{ backgroundColor: 'red', '&:hover': { backgroundColor: 'darkred' } }}
                         >
